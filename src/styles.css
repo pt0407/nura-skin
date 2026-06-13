@@ -444,10 +444,11 @@ section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
-  align-items: stretch;
+  align-items: start;
 }
 .scan-stage {
   position: relative;
+  min-width: 0;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius-lg);
   overflow: hidden;
