@@ -24,12 +24,17 @@ export interface Metric {
   blurb: string;
 }
 
+export type ToneDepth = "Fair" | "Light" | "Medium" | "Tan" | "Deep";
+export type Undertone = "warm" | "cool" | "neutral";
+
 export interface AnalysisResult {
   overall: number;
   metrics: Metric[];
   /** metric keys sorted worst-first */
   weakpoints: MetricKey[];
   skinTone: string;
+  depth: ToneDepth;
+  undertone: Undertone;
   detectedFace: boolean;
 }
 
@@ -157,13 +162,17 @@ function subBox(face: Box, fx: number, fy: number, fw: number, fh: number): Box 
   };
 }
 
-function toneName(r: number, g: number, b: number): string {
+function toneProfile(
+  r: number,
+  g: number,
+  b: number
+): { label: string; depth: ToneDepth; undertone: Undertone } {
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   const warmth = r - b; // warm vs cool
-  const depth =
+  const depth: ToneDepth =
     lum > 200 ? "Fair" : lum > 165 ? "Light" : lum > 125 ? "Medium" : lum > 90 ? "Tan" : "Deep";
-  const undertone = warmth > 28 ? "warm" : warmth < 8 ? "cool" : "neutral";
-  return `${depth}, ${undertone} undertone`;
+  const undertone: Undertone = warmth > 28 ? "warm" : warmth < 8 ? "cool" : "neutral";
+  return { label: `${depth}, ${undertone} undertone`, depth, undertone };
 }
 
 const METRIC_BLURBS: Record<MetricKey, [string, string]> = {
@@ -294,11 +303,15 @@ export async function analyzeFace(
     .slice(0, 3)
     .map((m) => m.key);
 
+  const tone = toneProfile(all.r, all.g, all.b);
+
   return {
     overall,
     metrics,
     weakpoints,
-    skinTone: toneName(all.r, all.g, all.b),
+    skinTone: tone.label,
+    depth: tone.depth,
+    undertone: tone.undertone,
     detectedFace: detected,
   };
 }

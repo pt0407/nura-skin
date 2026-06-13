@@ -83,7 +83,7 @@ export default function Scanner() {
       ]);
       clearInterval(ticker);
       setResult(res);
-      setRx(recommend(res.weakpoints));
+      setRx(recommend(res));
       setPhase("done");
     },
     []

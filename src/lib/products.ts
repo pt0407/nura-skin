@@ -1,6 +1,19 @@
-import type { MetricKey } from "./analyze";
+import type { AnalysisResult, MetricKey } from "./analyze";
 
 export type PriceTier = "$" | "$$" | "$$$";
+export type Strength = "gentle" | "moderate" | "active";
+export type Category =
+  | "niacinamide"
+  | "brightening"
+  | "azelaic"
+  | "hydrator"
+  | "barrier"
+  | "exfoliant"
+  | "retinoid"
+  | "vitc"
+  | "soothing"
+  | "acne"
+  | "spf";
 
 export interface Product {
   id: string; // stable key for dedup + future live-data lookups
@@ -10,6 +23,10 @@ export interface Product {
   hero: string; // key ingredient / why it's matched
   step: "AM" | "PM" | "AM/PM";
   targets: MetricKey[];
+  /** how potent the active is — matched to how severe the concern is */
+  strength: Strength;
+  /** product family, used to keep a routine coherent (no duplicates/conflicts) */
+  category: Category;
   tint: string; // accent color for the card swatch
   price: PriceTier;
   search: string; // brand + product, used to build the Amazon link
@@ -31,10 +48,9 @@ export function shopUrl(p: Pick<Product, "search">): string {
   return `https://www.amazon.com/s?k=${encodeURIComponent(p.search)}&tag=${AMAZON_TAG}`;
 }
 
-// A curated catalog of real, widely-available products, each tagged with the
-// concerns it helps so recommendations are derived from the user's own scan.
-// Order matters: recommend() picks the first unused match per concern, so the
-// strongest all-rounder for each concern is listed first.
+// A curated catalog of real, widely-available products. Each carries the
+// concerns it treats, a potency (strength) and a family (category) so the
+// recommender can match products to the user's actual scan profile.
 export const CATALOG: Product[] = [
   // ── Tone / evenness ──
   {
@@ -45,6 +61,8 @@ export const CATALOG: Product[] = [
     hero: "Niacinamide + zinc visibly even tone and curb shine.",
     step: "AM",
     targets: ["evenness", "clarity"],
+    strength: "gentle",
+    category: "niacinamide",
     tint: "#9d8650",
     price: "$",
     search: "The Ordinary Niacinamide 10% Zinc 1%",
@@ -57,6 +75,8 @@ export const CATALOG: Product[] = [
     hero: "Tranexamic acid + niacinamide fade post-acne marks.",
     step: "AM",
     targets: ["evenness"],
+    strength: "moderate",
+    category: "brightening",
     tint: "#a98b3e",
     price: "$",
     search: "Good Molecules Discoloration Correcting Serum",
@@ -69,6 +89,8 @@ export const CATALOG: Product[] = [
     hero: "Melasyl + niacinamide target stubborn discoloration.",
     step: "AM",
     targets: ["evenness", "radiance"],
+    strength: "moderate",
+    category: "brightening",
     tint: "#b07d4a",
     price: "$$",
     search: "La Roche-Posay Mela B3 serum",
@@ -83,6 +105,8 @@ export const CATALOG: Product[] = [
     hero: "Multi-weight hyaluronic acid + B5 pull water into skin.",
     step: "AM/PM",
     targets: ["hydration", "radiance"],
+    strength: "gentle",
+    category: "hydrator",
     tint: "#5b7c9d",
     price: "$",
     search: "The Ordinary Hyaluronic Acid 2% B5",
@@ -95,6 +119,8 @@ export const CATALOG: Product[] = [
     hero: "Lightweight hyaluronic gel for all-day water-binding.",
     step: "AM/PM",
     targets: ["hydration"],
+    strength: "gentle",
+    category: "hydrator",
     tint: "#6f93b3",
     price: "$",
     search: "Neutrogena Hydro Boost gel cream",
@@ -107,6 +133,8 @@ export const CATALOG: Product[] = [
     hero: "Snail mucin layers lightweight repair and bounce.",
     step: "AM/PM",
     targets: ["hydration", "texture"],
+    strength: "gentle",
+    category: "hydrator",
     tint: "#7f9a86",
     price: "$",
     search: "COSRX Advanced Snail 96 Mucin Essence",
@@ -121,6 +149,8 @@ export const CATALOG: Product[] = [
     hero: "Ceramides + hyaluronic acid rebuild a dry barrier.",
     step: "PM",
     targets: ["hydration", "texture"],
+    strength: "gentle",
+    category: "barrier",
     tint: "#a98c6b",
     price: "$",
     search: "CeraVe Moisturizing Cream",
@@ -133,6 +163,8 @@ export const CATALOG: Product[] = [
     hero: "Bare-bones, fragrance-free support for reactive skin.",
     step: "AM/PM",
     targets: ["hydration", "calmness"],
+    strength: "gentle",
+    category: "barrier",
     tint: "#b39d83",
     price: "$",
     search: "Vanicream Moisturizing Cream",
@@ -147,6 +179,8 @@ export const CATALOG: Product[] = [
     hero: "Salicylic acid clears pores and de-shines the T-zone.",
     step: "PM",
     targets: ["clarity", "texture"],
+    strength: "active",
+    category: "exfoliant",
     tint: "#6b8f71",
     price: "$$",
     search: "Paula's Choice 2% BHA Liquid Exfoliant",
@@ -159,6 +193,8 @@ export const CATALOG: Product[] = [
     hero: "Targeted BHA for congestion and breakouts.",
     step: "PM",
     targets: ["clarity"],
+    strength: "moderate",
+    category: "exfoliant",
     tint: "#5f8466",
     price: "$",
     search: "The Ordinary Salicylic Acid 2% Solution",
@@ -171,6 +207,8 @@ export const CATALOG: Product[] = [
     hero: "Niacinamide + LHA target active spots and marks.",
     step: "AM/PM",
     targets: ["clarity", "evenness"],
+    strength: "moderate",
+    category: "acne",
     tint: "#6e8f74",
     price: "$$",
     search: "La Roche-Posay Effaclar Duo",
@@ -185,6 +223,8 @@ export const CATALOG: Product[] = [
     hero: "Weekly AHA tone-up for smoother, brighter skin.",
     step: "PM",
     targets: ["texture", "radiance"],
+    strength: "active",
+    category: "exfoliant",
     tint: "#7a6e9c",
     price: "$",
     search: "The Ordinary Glycolic Acid 7% Toning Solution",
@@ -197,6 +237,8 @@ export const CATALOG: Product[] = [
     hero: "OTC retinoid for texture, clogged pores, and marks.",
     step: "PM",
     targets: ["texture", "clarity"],
+    strength: "active",
+    category: "retinoid",
     tint: "#8a6f9c",
     price: "$",
     search: "Differin Adapalene Gel 0.1%",
@@ -209,6 +251,8 @@ export const CATALOG: Product[] = [
     hero: "Encapsulated retinol smooths texture overnight.",
     step: "PM",
     targets: ["texture", "evenness"],
+    strength: "moderate",
+    category: "retinoid",
     tint: "#7e6b8a",
     price: "$",
     search: "CeraVe Resurfacing Retinol Serum",
@@ -221,6 +265,8 @@ export const CATALOG: Product[] = [
     hero: "Gluconolactone resurfaces gently — low irritation.",
     step: "PM",
     targets: ["texture", "evenness"],
+    strength: "gentle",
+    category: "exfoliant",
     tint: "#857aa6",
     price: "$",
     search: "The Inkey List PHA Toner",
@@ -235,6 +281,8 @@ export const CATALOG: Product[] = [
     hero: "15% vitamin C + ferulic for a brighter, even glow.",
     step: "AM",
     targets: ["radiance", "evenness"],
+    strength: "moderate",
+    category: "vitc",
     tint: "#c08a3e",
     price: "$$",
     search: "Maelove Glow Maker Vitamin C serum",
@@ -247,6 +295,8 @@ export const CATALOG: Product[] = [
     hero: "Vitamin C + E + ferulic to revive dull, tired skin.",
     step: "AM",
     targets: ["radiance"],
+    strength: "gentle",
+    category: "vitc",
     tint: "#c8943f",
     price: "$",
     search: "TruSkin Vitamin C Serum",
@@ -261,6 +311,8 @@ export const CATALOG: Product[] = [
     hero: "Panthenol + madecassoside calm and repair.",
     step: "AM/PM",
     targets: ["calmness", "hydration"],
+    strength: "gentle",
+    category: "soothing",
     tint: "#5f8f6a",
     price: "$$",
     search: "La Roche-Posay Cicaplast Baume B5",
@@ -272,7 +324,9 @@ export const CATALOG: Product[] = [
     type: "Treatment",
     hero: "Azelaic acid calms redness and unclogs at once.",
     step: "PM",
-    targets: ["calmness", "clarity"],
+    targets: ["calmness", "clarity", "evenness"],
+    strength: "moderate",
+    category: "azelaic",
     tint: "#8a5a5a",
     price: "$",
     search: "The Ordinary Azelaic Acid Suspension 10%",
@@ -285,12 +339,14 @@ export const CATALOG: Product[] = [
     hero: "49% centella quiets redness — fully fragrance-free.",
     step: "AM/PM",
     targets: ["calmness", "hydration"],
+    strength: "gentle",
+    category: "soothing",
     tint: "#5f9070",
     price: "$",
     search: "Purito Centella Unscented Serum",
   },
 
-  // ── Sunscreen (always last step) ──
+  // ── Sunscreen (always the final step) ──
   {
     id: "eltamd-uvclear",
     brand: "EltaMD",
@@ -299,6 +355,8 @@ export const CATALOG: Product[] = [
     hero: "Niacinamide mineral SPF derms love for acne-prone skin.",
     step: "AM",
     targets: ["radiance", "evenness", "calmness"],
+    strength: "gentle",
+    category: "spf",
     tint: "#3c5043",
     price: "$$$",
     search: "EltaMD UV Clear SPF 46",
@@ -311,6 +369,8 @@ export const CATALOG: Product[] = [
     hero: "Featherlight daily SPF with rice + probiotics.",
     step: "AM",
     targets: ["radiance", "hydration"],
+    strength: "gentle",
+    category: "spf",
     tint: "#445a4b",
     price: "$",
     search: "Beauty of Joseon Relief Sun SPF 50",
@@ -323,6 +383,8 @@ export const CATALOG: Product[] = [
     hero: "100% mineral broad-spectrum shield for sensitive skin.",
     step: "AM",
     targets: ["radiance", "calmness"],
+    strength: "gentle",
+    category: "spf",
     tint: "#3f5446",
     price: "$$",
     search: "La Roche-Posay Anthelios Mineral SPF 50",
@@ -342,38 +404,101 @@ const REASON: Record<MetricKey, string> = {
   calmness: "to calm redness",
 };
 
+const STRENGTH_RANK: Record<Strength, number> = { gentle: 0, moderate: 1, active: 2 };
+const PRICE_RANK: Record<PriceTier, number> = { $: 0, $$: 1, $$$: 2 };
+
+// Strong actives shouldn't be stacked (e.g. an acid exfoliant + a retinoid).
+const STRONG = new Set<Category>(["exfoliant", "retinoid"]);
+// For deeper tones we bias hyperpigmentation toward gentler, PIH-safe correctors.
+const PIGMENT_SAFE = new Set<Category>(["niacinamide", "brightening", "azelaic"]);
+
 /**
- * Pick a focused routine from the catalog based on the user's weak points.
- * Always finishes with SPF — protection is non-negotiable.
+ * Build a personalized routine from the user's full scan profile.
+ *
+ * Unlike a fixed lookup, this ranks the catalog against the user's actual
+ * metric deficits, picks active strength to match how severe each concern is,
+ * nudges for skin tone, keeps the routine coherent (distinct categories, no
+ * stacked strong actives), and ends on the SPF that best fits the profile —
+ * so two different faces get two different routines.
  */
-export function recommend(weakpoints: MetricKey[]): Recommendation[] {
+export function recommend(result: AnalysisResult): Recommendation[] {
+  const deficit = {} as Record<MetricKey, number>;
+  for (const m of result.metrics) deficit[m.key] = 100 - m.score; // higher = weaker
+
+  const deep = result.depth === "Tan" || result.depth === "Deep";
+  const sevTier = (d: number) => (d < 30 ? 0 : d <= 55 ? 1 : 2);
+
+  // Relevance = how much of THIS user's weakness a product addresses.
+  const relevance = (p: Product) =>
+    p.targets.reduce((s, t) => s + (deficit[t] ?? 0) / 100, 0);
+
+  // Full fit score for a product chosen to address a specific concern.
+  const fitScore = (p: Product, concern: MetricKey) => {
+    const strengthFit = Math.max(0, 2 - Math.abs(sevTier(deficit[concern] ?? 0) - STRENGTH_RANK[p.strength]));
+    let tone = 0;
+    if (deep) {
+      if (concern === "evenness" && PIGMENT_SAFE.has(p.category)) tone += 0.5;
+      if (p.strength === "active" && STRONG.has(p.category)) tone -= 0.3; // PIH caution
+    }
+    return relevance(p) + strengthFit * 0.5 + tone;
+  };
+
   const picks: Recommendation[] = [];
-  const used = new Set<string>();
+  const usedIds = new Set<string>();
+  const usedCats = new Set<Category>();
+  let usedStrong = false;
 
-  for (const concern of weakpoints) {
-    const match = CATALOG.find(
-      (p) => p.targets.includes(concern) && !used.has(p.id) && p.type !== "Sunscreen"
+  const eligible = (p: Product) =>
+    p.category !== "spf" &&
+    !usedIds.has(p.id) &&
+    !usedCats.has(p.category) &&
+    !(STRONG.has(p.category) && usedStrong);
+
+  const take = (p: Product, reason: string) => {
+    usedIds.add(p.id);
+    usedCats.add(p.category);
+    if (STRONG.has(p.category)) usedStrong = true;
+    picks.push({ ...p, reason });
+  };
+
+  // 1) One product per weak concern, most severe first.
+  for (const concern of result.weakpoints) {
+    if (picks.length >= 3) break;
+    const cands = CATALOG.filter((p) => eligible(p) && p.targets.includes(concern));
+    if (!cands.length) continue;
+    cands.sort(
+      (a, b) =>
+        fitScore(b, concern) - fitScore(a, concern) ||
+        b.targets.length - a.targets.length ||
+        PRICE_RANK[a.price] - PRICE_RANK[b.price] ||
+        a.id.localeCompare(b.id)
     );
-    if (match) {
-      used.add(match.id);
-      picks.push({ ...match, reason: REASON[concern] });
-    }
+    take(cands[0], REASON[concern]);
   }
 
-  // Round the routine out with a hydrator if nothing covers it yet.
-  if (!picks.some((p) => p.targets.includes("hydration"))) {
-    const hydrator = CATALOG.find(
-      (p) => p.targets.includes("hydration") && p.type !== "Sunscreen" && !used.has(p.id)
+  // 2) Fill any remaining treatment slots with the best supporting product.
+  while (picks.length < 3) {
+    const cands = CATALOG.filter(eligible);
+    if (!cands.length) break;
+    cands.sort(
+      (a, b) =>
+        relevance(b) - relevance(a) ||
+        PRICE_RANK[a.price] - PRICE_RANK[b.price] ||
+        a.id.localeCompare(b.id)
     );
-    if (hydrator) {
-      picks.push({ ...hydrator, reason: "to keep skin balanced" });
-      used.add(hydrator.id);
-    }
+    const best = cands[0];
+    const topTarget = [...best.targets].sort((a, b) => (deficit[b] ?? 0) - (deficit[a] ?? 0))[0];
+    take(best, REASON[topTarget]);
   }
 
-  // Cap treatments at 3 so SPF always keeps the final slot — protection is
-  // non-negotiable and must never be sliced off.
-  const treatments = picks.slice(0, 3);
-  const spf = CATALOG.find((p) => p.type === "Sunscreen")!;
-  return [...treatments, { ...spf, reason: "to protect every result" }];
+  // 3) Finish with the SPF that best fits the profile — always the last step.
+  const spf = [...CATALOG.filter((p) => p.category === "spf")].sort(
+    (a, b) =>
+      relevance(b) - relevance(a) ||
+      PRICE_RANK[a.price] - PRICE_RANK[b.price] ||
+      a.id.localeCompare(b.id)
+  )[0];
+  picks.push({ ...spf, reason: "to protect every result" });
+
+  return picks;
 }
