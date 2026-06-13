@@ -804,13 +804,40 @@ section {
   flex: 1;
   min-width: 0;
 }
+.rx-brand {
+  font-size: 0.66rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 0.1rem;
+}
 .rx-name {
   font-size: 0.94rem;
   font-weight: 600;
   color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .rx-reason {
   font-size: 0.8rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rx-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+.rx-price {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   color: var(--ink-soft);
 }
 .rx-step {
@@ -822,6 +849,13 @@ section {
   padding: 0.28rem 0.55rem;
   border-radius: 999px;
   flex-shrink: 0;
+}
+.affiliate-note {
+  margin-top: 0.9rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  opacity: 0.85;
 }
 .results-actions {
   display: flex;

@@ -384,18 +384,26 @@ function Results({
             >
               <span className="rx-swatch" style={{ background: p.tint }} />
               <div className="rx-body">
+                <div className="rx-brand">{p.brand}</div>
                 <div className="rx-name">{p.name}</div>
                 <div className="rx-reason">
                   {p.type} · {p.reason}
                 </div>
               </div>
-              <span className="rx-step">{p.step}</span>
+              <div className="rx-meta">
+                <span className="rx-price">{p.price}</span>
+                <span className="rx-step">{p.step}</span>
+              </div>
               <span className="rx-go" aria-hidden="true">
                 <ArrowIcon size={15} />
               </span>
             </motion.a>
           ))}
         </div>
+        <p className="affiliate-note">
+          NURA may earn a commission on purchases made through these links, at no
+          extra cost to you. Picks are matched to your scan — never paid placements.
+        </p>
       </div>
 
       <div className="results-actions">
