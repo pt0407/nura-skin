@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { analyzeFace, type AnalysisResult } from "../lib/analyze";
-import { recommend, type Recommendation } from "../lib/products";
+import { recommend, shopUrl, type Recommendation } from "../lib/products";
 import {
   CameraIcon,
   CheckIcon,
@@ -371,9 +371,13 @@ function Results({
         <h4>Your matched routine</h4>
         <div className="rx">
           {rx.map((p, i) => (
-            <motion.div
+            <motion.a
               key={p.name}
               className="rx-item"
+              href={shopUrl(p)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Shop ${p.type.toLowerCase()} — opens a retailer search`}
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
@@ -386,7 +390,10 @@ function Results({
                 </div>
               </div>
               <span className="rx-step">{p.step}</span>
-            </motion.div>
+              <span className="rx-go" aria-hidden="true">
+                <ArrowIcon size={15} />
+              </span>
+            </motion.a>
           ))}
         </div>
       </div>

@@ -774,10 +774,25 @@ section {
   background: var(--cream-card);
   border: 1px solid var(--line);
   transition: transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 .rx-item:hover {
   transform: translateX(4px);
   box-shadow: var(--shadow-sm);
+}
+.rx-go {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  opacity: 0.4;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.rx-item:hover .rx-go {
+  opacity: 1;
+  transform: translateX(3px);
 }
 .rx-swatch {
   width: 34px;

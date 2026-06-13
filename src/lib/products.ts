@@ -7,6 +7,15 @@ export interface Product {
   step: "AM" | "PM" | "AM/PM";
   targets: MetricKey[];
   tint: string; // accent color for the card
+  search: string; // active-ingredient query used to build a shop link
+}
+
+// NURA doesn't sell products — each card links out to a retailer search for the
+// active ingredient, so the link is always live and region-appropriate.
+const SHOP_BASE = "https://www.sephora.com/search?keyword=";
+
+export function shopUrl(p: Pick<Product, "search">): string {
+  return SHOP_BASE + encodeURIComponent(p.search);
 }
 
 // A small curated catalog. Each product is tagged with the concerns it helps,
@@ -19,6 +28,7 @@ export const CATALOG: Product[] = [
     step: "AM/PM",
     targets: ["hydration", "radiance"],
     tint: "#5b7c9d",
+    search: "hyaluronic acid serum",
   },
   {
     name: "Ceramide Barrier Cream",
@@ -27,6 +37,7 @@ export const CATALOG: Product[] = [
     step: "PM",
     targets: ["hydration", "texture"],
     tint: "#a98c6b",
+    search: "ceramide moisturizer",
   },
   {
     name: "10% Niacinamide Tone Fluid",
@@ -35,6 +46,7 @@ export const CATALOG: Product[] = [
     step: "AM",
     targets: ["evenness", "clarity"],
     tint: "#9d8650",
+    search: "niacinamide serum",
   },
   {
     name: "Gentle BHA Pore Refiner",
@@ -43,6 +55,7 @@ export const CATALOG: Product[] = [
     step: "PM",
     targets: ["clarity", "texture"],
     tint: "#6b8f71",
+    search: "salicylic acid bha exfoliant",
   },
   {
     name: "PHA Smoothing Toner",
@@ -51,6 +64,7 @@ export const CATALOG: Product[] = [
     step: "PM",
     targets: ["texture", "evenness"],
     tint: "#7a6e9c",
+    search: "pha toner gluconolactone",
   },
   {
     name: "Vitamin C Glow Ampoule",
@@ -59,6 +73,7 @@ export const CATALOG: Product[] = [
     step: "AM",
     targets: ["radiance", "evenness"],
     tint: "#c08a3e",
+    search: "vitamin c serum",
   },
   {
     name: "Centella Calm Serum",
@@ -67,6 +82,7 @@ export const CATALOG: Product[] = [
     step: "AM/PM",
     targets: ["calmness", "hydration"],
     tint: "#5f8f6a",
+    search: "centella cica serum",
   },
   {
     name: "Azelaic Redness Corrector",
@@ -75,6 +91,7 @@ export const CATALOG: Product[] = [
     step: "PM",
     targets: ["calmness", "clarity"],
     tint: "#8a5a5a",
+    search: "azelaic acid serum",
   },
   {
     name: "Mineral Glow SPF 50",
@@ -83,6 +100,7 @@ export const CATALOG: Product[] = [
     step: "AM",
     targets: ["radiance", "evenness", "calmness"],
     tint: "#3c5043",
+    search: "mineral sunscreen spf 50",
   },
 ];
 
