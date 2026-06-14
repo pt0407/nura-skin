@@ -1,0 +1,12 @@
+{
+  "test@example.com": {
+    "name": "Test User",
+    "email": "test@example.com",
+    "passwordHash": "$2a$10$VJa5ONTzqlTdts41d6w6EeCuGaanUrPjw9CoEpffMboTQiKPudXlS"
+  },
+  "jane@example.com": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "passwordHash": "$2a$10$ROhZdZj6rSv0s16SMJVyKu3qa9.mrQjgvz6zz2Og.b7b/vPWCrWTy"
+  }
+}
