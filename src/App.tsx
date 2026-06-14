@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
@@ -23,6 +23,12 @@ function Home() {
       <Footer />
     </>
   );
+}
+
+function HomeOrLogin() {
+  const { engaged } = useAuth();
+  if (!engaged) return <Navigate to="/login" replace />;
+  return <Home />;
 }
 
 export default function App() {
@@ -53,8 +59,8 @@ export default function App() {
       ) : (
         <main>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="*" element={<Home />} />
+            <Route path="/" element={<HomeOrLogin />} />
+            <Route path="*" element={<HomeOrLogin />} />
           </Routes>
         </main>
       )}
