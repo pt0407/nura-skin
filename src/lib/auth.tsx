@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isGuest: boolean;
+  engaged: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => void;
@@ -22,6 +23,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKEN_KEY = "nura_token";
+const ENGAGED_KEY = "nura_engaged";
+
+function hasEngaged(): boolean {
+  return localStorage.getItem(ENGAGED_KEY) === "1";
+}
+
+function setEngagedFlag(value: boolean) {
+  if (value) localStorage.setItem(ENGAGED_KEY, "1");
+  else localStorage.removeItem(ENGAGED_KEY);
+}
 
 function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -57,6 +68,7 @@ function parseJwtUser(token: string): User | null {
 export function AuthProvider({ children }: { children: ReactNode }): ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [engaged, setEngaged] = useState(hasEngaged);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -64,7 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
     if (tokenFromUrl) {
       setStoredToken(tokenFromUrl);
       const parsed = parseJwtUser(tokenFromUrl);
-      if (parsed) setUser(parsed);
+      if (parsed) {
+        setUser(parsed);
+        setEngaged(true);
+        setEngagedFlag(true);
+      }
       url.searchParams.delete("token");
       url.searchParams.delete("name");
       url.searchParams.delete("email");
@@ -79,8 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
       return;
     }
     fetchUser(token).then((u) => {
-      if (u) setUser(u);
-      else setStoredToken(null);
+      if (u) {
+        setUser(u);
+        if (hasEngaged()) setEngaged(true);
+      } else {
+        setStoredToken(null);
+      }
       setLoading(false);
     });
   }, []);
@@ -96,6 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
       if (!res.ok) return false;
       setStoredToken(data.token);
       setUser(data.user);
+      setEngaged(true);
+      setEngagedFlag(true);
       return true;
     } catch {
       return false;
@@ -117,6 +139,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
       if (!res.ok) return false;
       setStoredToken(data.token);
       setUser(data.user);
+      setEngaged(true);
+      setEngagedFlag(true);
       return true;
     } catch {
       return false;
@@ -134,6 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
       if (!res.ok) return false;
       setStoredToken(data.token);
       setUser(data.user);
+      setEngaged(true);
+      setEngagedFlag(true);
       return true;
     } catch {
       return false;
@@ -148,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
   const isGuest = !!user?.isGuest;
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, isGuest, loginWithGoogle, continueAsGuest }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, isGuest, engaged, loginWithGoogle, continueAsGuest }}>
       {children}
     </AuthContext.Provider>
   );

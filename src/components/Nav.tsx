@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth";
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [onHero, setOnHero] = useState(true);
-  const { user, logout, isGuest } = useAuth();
+  const { user, logout, isGuest, engaged } = useAuth();
   const location = useLocation();
   const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
 
@@ -50,7 +50,7 @@ export default function Nav() {
                 Sign in
               </Link>
               <Link to="/login" className="nav-cta">
-                Open the app
+                {engaged ? "Open the app" : "Sign up"}
               </Link>
             </>
           )}

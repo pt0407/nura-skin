@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../lib/auth";
 import { ArrowIcon } from "./icons";
 
 const ease = [0.2, 0.7, 0.2, 1] as const;
@@ -11,6 +13,7 @@ const HERO_IMG =
 
 export default function Hero() {
   const [imgOk, setImgOk] = useState(true);
+  const { engaged } = useAuth();
 
   return (
     <header className="hero" id="top">
@@ -71,24 +74,34 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease, delay: 0.76 }}
         >
-          <a href="#scan" className="btn btn-primary">
-            Open the app <ArrowIcon size={18} />
-          </a>
-          <a href="#pillars" className="btn btn-ghost">
-            Scroll to features
-          </a>
+          {engaged ? (
+            <a href="#scan" className="btn btn-primary">
+              Open the app <ArrowIcon size={18} />
+            </a>
+          ) : (
+            <Link to="/login" className="btn btn-primary">
+              Sign up <ArrowIcon size={18} />
+            </Link>
+          )}
+          {engaged && (
+            <a href="#pillars" className="btn btn-ghost">
+              Scroll to features
+            </a>
+          )}
         </motion.div>
       </div>
 
-      <motion.div
-        className="hero-scroll"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.3 }}
-      >
-        <span>Scroll</span>
-        <span className="line" />
-      </motion.div>
+      {engaged && (
+        <motion.div
+          className="hero-scroll"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.3 }}
+        >
+          <span>Scroll</span>
+          <span className="line" />
+        </motion.div>
+      )}
     </header>
   );
 }

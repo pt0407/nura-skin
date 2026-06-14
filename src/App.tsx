@@ -1,4 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Pillars from "./components/Pillars";
@@ -9,6 +10,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import { useAuth } from "./lib/auth";
 
 function Home() {
   return (
@@ -25,7 +27,19 @@ function Home() {
 
 export default function App() {
   const location = useLocation();
+  const { engaged } = useAuth();
   const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
+
+  useEffect(() => {
+    if (isAuthPage || engaged) {
+      document.body.style.overflow = "";
+      return;
+    }
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isAuthPage, engaged]);
 
   return (
     <>
