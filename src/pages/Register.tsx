@@ -36,8 +36,9 @@ export default function Register() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1 className="login-title">Get started</h1>
-        <p className="login-subtitle">Create your NURA account.</p>
+        <p className="login-eyebrow">Get started</p>
+        <h1 className="login-title">NURA</h1>
+        <p className="login-subtitle">Create your account.</p>
         {error && <div className="login-error">{error}</div>}
         <form onSubmit={handleSubmit} className="login-form">
           <label className="login-label">

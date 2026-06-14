@@ -332,6 +332,91 @@ button {
   color: var(--green);
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.2rem 0;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.login-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--ink);
+  color: #f4f1ea;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: var(--sans);
+  transition: background 0.25s, transform 0.25s;
+}
+.login-google:hover {
+  background: var(--green-deep);
+  transform: translateY(-1px);
+}
+.login-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.login-google svg {
+  width: 18px;
+  height: 18px;
+}
+
+.login-guest {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 0.7rem 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  font-family: var(--sans);
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.login-guest:hover {
+  color: var(--green);
+}
+
+.login-terms {
+  margin-top: 1.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+}
+.login-terms a {
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.login-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--green-bright);
+  margin-bottom: 0.6rem;
+}
+
 /* ── Hero ────────────────────────────────────────────────── */
 .hero {
   position: relative;

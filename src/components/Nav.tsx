@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth";
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [onHero, setOnHero] = useState(true);
-  const { user, logout } = useAuth();
+  const { user, logout, isGuest } = useAuth();
   const location = useLocation();
   const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
 
@@ -38,7 +38,7 @@ export default function Nav() {
           {user ? (
             <>
               <Link to="/dashboard" className="nav-user">
-                {user.name}
+                {isGuest ? "Guest" : user.name}
               </Link>
               <button className="nav-cta" onClick={logout}>
                 Sign out

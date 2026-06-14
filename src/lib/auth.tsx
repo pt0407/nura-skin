@@ -5,13 +5,17 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 export interface User {
   email: string;
   name: string;
+  isGuest?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isGuest: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: () => void;
+  continueAsGuest: () => Promise<boolean>;
   logout: () => void;
 }
 
@@ -41,11 +45,34 @@ async function fetchUser(token: string): Promise<User | null> {
   }
 }
 
+function parseJwtUser(token: string): User | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return { email: payload.email, name: payload.name, isGuest: payload.isGuest };
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }): ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const tokenFromUrl = url.searchParams.get("token");
+    if (tokenFromUrl) {
+      setStoredToken(tokenFromUrl);
+      const parsed = parseJwtUser(tokenFromUrl);
+      if (parsed) setUser(parsed);
+      url.searchParams.delete("token");
+      url.searchParams.delete("name");
+      url.searchParams.delete("email");
+      window.history.replaceState({}, "", url.toString());
+      setLoading(false);
+      return;
+    }
+
     const token = getStoredToken();
     if (!token) {
       setLoading(false);
@@ -96,13 +123,32 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
     }
   };
 
+  const loginWithGoogle = () => {
+    window.location.href = `${API_URL}/api/auth/google`;
+  };
+
+  const continueAsGuest = async (): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_URL}/api/guest`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) return false;
+      setStoredToken(data.token);
+      setUser(data.user);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const logout = () => {
     setStoredToken(null);
     setUser(null);
   };
 
+  const isGuest = !!user?.isGuest;
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, isGuest, loginWithGoogle, continueAsGuest }}>
       {children}
     </AuthContext.Provider>
   );
