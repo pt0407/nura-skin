@@ -157,7 +157,7 @@ app.get("/api/auth/google/callback", async (req, res) => {
     await createUser(email, name, dummyHash, "google");
 
     const token = signToken({ email, name, provider: "google" });
-    const redirect = `${base}/login?token=${encodeURIComponent(token)}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+    const redirect = `${base}/dashboard?token=${encodeURIComponent(token)}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
     res.redirect(redirect);
   } catch (err) {
     console.error("Google OAuth error:", err);
