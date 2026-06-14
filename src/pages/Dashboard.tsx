@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
 export default function Dashboard() {
-  const { user, logout, isGuest } = useAuth();
+  const { user, isGuest } = useAuth();
 
   return (
     <div className="login-page">
@@ -42,13 +42,6 @@ export default function Dashboard() {
               Create account
             </Link>
           ) : null}
-          <button
-            type="button"
-            className="login-btn secondary"
-            onClick={logout}
-          >
-            {isGuest ? "End session" : "Sign out"}
-          </button>
         </div>
       </div>
     </div>
