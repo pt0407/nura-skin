@@ -6,6 +6,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomBytes } from "node:crypto";
 import pg from "pg";
 
 const { Pool } = pg;
@@ -15,6 +16,37 @@ const DB_PATH = path.join(__dirname, "../server/users.json");
 const JWT_SECRET = process.env.JWT_SECRET || "nura_dev_secret_change_me";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
+
+const ALLOWED_ORIGINS = [
+  "https://nura-skin-swart.vercel.app",
+  "https://nura-skin.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+const rateMap = new Map();
+function rateLimit(windowMs = 60000, max = 10) {
+  return (req, res, next) => {
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown";
+    const key = `${ip}:${req.path}`;
+    const now = Date.now();
+    const entry = rateMap.get(key);
+    if (!entry) {
+      rateMap.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+    if (now > entry.resetAt) {
+      entry.count = 1;
+      entry.resetAt = now + windowMs;
+      return next();
+    }
+    entry.count++;
+    if (entry.count > max) {
+      return res.status(429).json({ error: "Too many requests. Please try again later." });
+    }
+    next();
+  };
+}
 
 const pool = process.env.DATABASE_URL
   ? new Pool({
@@ -119,7 +151,7 @@ function getBaseUrl(req) {
 }
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json());
 
 app.get("/api/auth/google", (req, res) => {
@@ -128,7 +160,7 @@ app.get("/api/auth/google", (req, res) => {
   }
   const base = getBaseUrl(req);
   const redirectUri = `${base}/api/auth/google/callback`;
-  const state = Buffer.from(JSON.stringify({ redirect: `${base}/dashboard` })).toString("base64url");
+  const state = randomBytes(32).toString("hex");
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", GOOGLE_CLIENT_ID);
   url.searchParams.set("redirect_uri", redirectUri);
@@ -187,13 +219,13 @@ app.get("/api/auth/google/callback", async (req, res) => {
   }
 });
 
-app.post("/api/guest", (_req, res) => {
+app.post("/api/guest", rateLimit(60000, 5), (_req, res) => {
   const guestId = Math.random().toString(36).slice(2) + Date.now().toString(36);
   const token = signToken({ email: `guest-${guestId}@nura.local`, name: "Guest", isGuest: true });
   res.json({ token, user: { email: "guest@nura.local", name: "Guest", isGuest: true } });
 });
 
-app.post("/api/register", async (req, res) => {
+app.post("/api/register", rateLimit(60000, 5), async (req, res) => {
   await initDb();
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
@@ -210,7 +242,7 @@ app.post("/api/register", async (req, res) => {
   res.json({ token, user: { email: key, name } });
 });
 
-app.post("/api/login", async (req, res) => {
+app.post("/api/login", rateLimit(60000, 5), async (req, res) => {
   await initDb();
   const { email, password } = req.body;
   if (!email || !password) {
