@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth";
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [onHero, setOnHero] = useState(true);
-  const { user, logout, isGuest, engaged } = useAuth();
+  const { user, isGuest, engaged } = useAuth();
   const location = useLocation();
   const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
 
@@ -36,14 +36,9 @@ export default function Nav() {
         )}
         <div className="nav-actions">
           {user ? (
-            <>
-              <Link to="/dashboard" className="nav-user">
-                {isGuest ? "Guest" : user.name}
-              </Link>
-              <button className="nav-cta" onClick={logout}>
-                Sign out
-              </button>
-            </>
+            <Link to="/dashboard" className="nav-user">
+              {isGuest ? "Guest" : user.name}
+            </Link>
           ) : (
             <>
               <Link to="/login" className="nav-login">

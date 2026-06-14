@@ -169,6 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
   const logout = () => {
     setStoredToken(null);
     setUser(null);
+    setEngaged(false);
+    setEngagedFlag(false);
   };
 
   const isGuest = !!user?.isGuest;
