@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [onHero, setOnHero] = useState(true);
-  const { user, isGuest, engaged } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { user, logout, isGuest, engaged } = useAuth();
   const location = useLocation();
   const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
 
@@ -19,6 +21,17 @@ export default function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [isAuthPage]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [menuOpen]);
 
   return (
     <nav className={`nav${scrolled ? " scrolled" : ""}${onHero && !isAuthPage ? " on-hero" : ""}`}>
@@ -36,9 +49,28 @@ export default function Nav() {
         )}
         <div className="nav-actions">
           {user ? (
-            <Link to="/dashboard" className="nav-user">
-              {isGuest ? "Guest" : user.name}
-            </Link>
+            <div className="nav-profile" ref={menuRef}>
+              <button
+                className="nav-user"
+                onClick={() => setMenuOpen((o) => !o)}
+                type="button"
+              >
+                {isGuest ? "Guest" : user.name}
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ marginLeft: "6px", opacity: 0.6, transform: menuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              {menuOpen && (
+                <div className="nav-dropdown">
+                  <Link to="/dashboard" className="nav-dropdown-item" onClick={() => setMenuOpen(false)}>
+                    Dashboard
+                  </Link>
+                  <button className="nav-dropdown-item" onClick={() => { logout(); setMenuOpen(false); }} type="button">
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link to="/login" className="nav-login">
