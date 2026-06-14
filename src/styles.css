@@ -1315,6 +1315,128 @@ section {
   }
 }
 
+/* ── Admin Panel ─────────────────────────────────────────── */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.admin-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem 1rem;
+  text-align: center;
+}
+.admin-label {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+}
+.admin-value {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+.admin-tab {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.admin-tab.active {
+  background: var(--green);
+  color: #f4f1ea;
+  border-color: var(--green);
+}
+.admin-chart-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+}
+.admin-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  height: 140px;
+}
+.admin-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  height: 100%;
+}
+.admin-chart-bar {
+  width: 100%;
+  background: var(--green);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.4s ease;
+}
+.admin-chart-label {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+.admin-table-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  overflow-x: auto;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.admin-table th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.admin-table td {
+  color: var(--ink);
+}
+.admin-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  background: var(--cream-card);
+  color: var(--ink-soft);
+}
+.admin-badge.google {
+  background: #e8f0fe;
+  color: #1a73e8;
+}
+.admin-badge.email {
+  background: #e6f4ea;
+  color: #1e8e3e;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -7,9 +7,9 @@ export default function Nav() {
   const [onHero, setOnHero] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { user, logout, isGuest, engaged } = useAuth();
+  const { user, logout, isGuest, isAdmin, engaged } = useAuth();
   const location = useLocation();
-  const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
+  const isAuthPage = ["/login", "/register", "/dashboard", "/admin"].includes(location.pathname);
 
   useEffect(() => {
     const onScroll = () => {
@@ -65,6 +65,11 @@ export default function Nav() {
                   <Link to="/dashboard" className="nav-dropdown-item" onClick={() => setMenuOpen(false)}>
                     Dashboard
                   </Link>
+                  {isAdmin && (
+                    <Link to="/admin" className="nav-dropdown-item" onClick={() => setMenuOpen(false)}>
+                      Admin Panel
+                    </Link>
+                  )}
                   <button className="nav-dropdown-item" onClick={() => { logout(); setMenuOpen(false); }} type="button">
                     Sign out
                   </button>

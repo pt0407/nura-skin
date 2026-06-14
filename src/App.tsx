@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
 import { useAuth } from "./lib/auth";
 
 function Home() {
@@ -34,7 +35,7 @@ function HomeOrLogin() {
 export default function App() {
   const location = useLocation();
   const { engaged } = useAuth();
-  const isAuthPage = ["/login", "/register", "/dashboard"].includes(location.pathname);
+  const isAuthPage = ["/login", "/register", "/dashboard", "/admin"].includes(location.pathname);
 
   useEffect(() => {
     if (isAuthPage || engaged) {
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       ) : (
         <main>

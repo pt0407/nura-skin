@@ -6,12 +6,14 @@ export interface User {
   email: string;
   name: string;
   isGuest?: boolean;
+  isAdmin?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isGuest: boolean;
+  isAdmin: boolean;
   engaged: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
@@ -105,6 +107,15 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
     });
   }, []);
 
+  useEffect(() => {
+    if (!API_URL) return;
+    fetch(`${API_URL}/api/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: window.location.pathname }),
+    }).catch(() => {});
+  }, []);
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const res = await fetch(`${API_URL}/api/login`, {
@@ -174,9 +185,10 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactElemen
   };
 
   const isGuest = !!user?.isGuest;
+  const isAdmin = !!user?.isAdmin;
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, isGuest, engaged, loginWithGoogle, continueAsGuest }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, isGuest, isAdmin, engaged, loginWithGoogle, continueAsGuest }}>
       {children}
     </AuthContext.Provider>
   );

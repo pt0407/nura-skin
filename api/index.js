@@ -31,22 +31,33 @@ async function initDb() {
       name TEXT NOT NULL,
       password_hash TEXT,
       auth_provider TEXT DEFAULT 'email',
+      is_admin BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     )
   `);
   try {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT DEFAULT 'email'`);
     await pool.query(`ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE`);
   } catch {
     // columns may already exist
   }
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS visits (
+      id SERIAL PRIMARY KEY,
+      visit_date DATE DEFAULT CURRENT_DATE,
+      page_path TEXT DEFAULT '/',
+      count INTEGER DEFAULT 1,
+      UNIQUE(visit_date, page_path)
+    )
+  `);
 }
 
 async function readDb() {
   if (pool) {
-    const { rows } = await pool.query("SELECT email, name, password_hash, auth_provider FROM users");
+    const { rows } = await pool.query("SELECT email, name, password_hash, auth_provider, is_admin FROM users");
     const map = {};
-    for (const r of rows) map[r.email] = { name: r.name, passwordHash: r.password_hash, authProvider: r.auth_provider };
+    for (const r of rows) map[r.email] = { name: r.name, passwordHash: r.password_hash, authProvider: r.auth_provider, isAdmin: r.is_admin };
     return map;
   }
   if (!existsSync(DB_PATH)) return {};
@@ -67,7 +78,7 @@ async function createUser(email, name, passwordHash, authProvider = "email") {
     );
   } else {
     const db = await readDb();
-    db[email] = { name, email, passwordHash, authProvider };
+    db[email] = { name, email, passwordHash, authProvider, isAdmin: false };
     await writeDb(db);
   }
 }
@@ -88,6 +99,17 @@ function verifyToken(req, res, next) {
   } catch {
     return res.status(401).json({ error: "Invalid token" });
   }
+}
+
+async function requireAdmin(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  if (pool) {
+    const { rows } = await pool.query("SELECT is_admin FROM users WHERE email = $1", [req.user.email]);
+    if (!rows.length || !rows[0].is_admin) {
+      return res.status(403).json({ error: "Admin required" });
+    }
+  }
+  next();
 }
 
 function getBaseUrl(req) {
@@ -209,7 +231,91 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.get("/api/me", verifyToken, async (req, res) => {
-  res.json({ user: req.user });
+  let isAdmin = false;
+  if (pool) {
+    const { rows } = await pool.query("SELECT is_admin FROM users WHERE email = $1", [req.user.email]);
+    if (rows.length) isAdmin = rows[0].is_admin;
+  }
+  res.json({ user: { ...req.user, isAdmin } });
+});
+
+app.post("/api/track", async (req, res) => {
+  if (!pool) return res.json({ ok: true });
+  const { path = "/" } = req.body || {};
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    await pool.query(
+      `INSERT INTO visits (visit_date, page_path, count) VALUES ($1, $2, 1)
+       ON CONFLICT (visit_date, page_path) DO UPDATE SET count = visits.count + 1`,
+      [today, path]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Track error:", err);
+    res.json({ ok: false });
+  }
+});
+
+app.get("/api/admin/stats", verifyToken, requireAdmin, async (_req, res) => {
+  if (!pool) {
+    const db = await readDb();
+    const users = Object.values(db);
+    return res.json({
+      totalUsers: users.length,
+      emailUsers: users.filter((u) => u.authProvider === "email" || !u.authProvider).length,
+      googleUsers: users.filter((u) => u.authProvider === "google").length,
+      guestUsers: 0,
+      visitsToday: 0,
+      visitsWeek: 0,
+      visitsMonth: 0,
+      dailyVisits: [],
+    });
+  }
+  try {
+    const totalRes = await pool.query("SELECT COUNT(*)::int AS total FROM users");
+    const emailRes = await pool.query("SELECT COUNT(*)::int AS c FROM users WHERE auth_provider = 'email'");
+    const googleRes = await pool.query("SELECT COUNT(*)::int AS c FROM users WHERE auth_provider = 'google'");
+    const guestRes = await pool.query("SELECT COUNT(*)::int AS c FROM users WHERE email LIKE 'guest-%'");
+
+    const today = new Date().toISOString().split("T")[0];
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+    const todayRes = await pool.query("SELECT COALESCE(SUM(count),0)::int AS c FROM visits WHERE visit_date = $1", [today]);
+    const weekRes = await pool.query("SELECT COALESCE(SUM(count),0)::int AS c FROM visits WHERE visit_date >= $1", [weekAgo]);
+    const monthRes = await pool.query("SELECT COALESCE(SUM(count),0)::int AS c FROM visits WHERE visit_date >= $1", [monthAgo]);
+    const dailyRes = await pool.query(
+      "SELECT visit_date AS date, SUM(count)::int AS total FROM visits WHERE visit_date >= $1 GROUP BY visit_date ORDER BY visit_date",
+      [weekAgo]
+    );
+
+    res.json({
+      totalUsers: totalRes.rows[0].total,
+      emailUsers: emailRes.rows[0].c,
+      googleUsers: googleRes.rows[0].c,
+      guestUsers: guestRes.rows[0].c,
+      visitsToday: todayRes.rows[0].c,
+      visitsWeek: weekRes.rows[0].c,
+      visitsMonth: monthRes.rows[0].c,
+      dailyVisits: dailyRes.rows,
+    });
+  } catch (err) {
+    console.error("Admin stats error:", err);
+    res.status(500).json({ error: "Failed to load stats" });
+  }
+});
+
+app.get("/api/admin/users", verifyToken, requireAdmin, async (_req, res) => {
+  if (!pool) return res.json({ users: [] });
+  try {
+    const { rows } = await pool.query(
+      "SELECT email, name, auth_provider, is_admin, created_at FROM users ORDER BY created_at DESC"
+    );
+    res.json({ users: rows });
+  } catch (err) {
+    console.error("Admin users error:", err);
+    res.status(500).json({ error: "Failed to load users" });
+  }
 });
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
